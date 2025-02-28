@@ -2,21 +2,47 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
+import mediaUpload from "../../utils/mediaUpload";
 
 export default function UpdateItemPage() {
-    const location = useLocation()
+	const location = useLocation();
 
-    console.log(location)
+	console.log(location);
 
 	const [productKey, setProductKey] = useState(location.state.key);
 	const [productName, setProductName] = useState(location.state.name);
 	const [productPrice, setProductPrice] = useState(location.state.price);
-	const [productCategory, setProductCategory] = useState(location.state.category);
-	const [productDimensions, setProductDimensions] = useState(location.state.dimensions);
-	const [productDescription, setProductDescription] = useState(location.state.description);
-    const navigate = useNavigate()
-    
-	async function handleAddItem() {
+	const [productCategory, setProductCategory] = useState(
+		location.state.category
+	);
+	const [productDimensions, setProductDimensions] = useState(
+		location.state.dimensions
+	);
+	const [productDescription, setProductDescription] = useState(
+		location.state.description
+	);
+	const [productImages, setProductImages] = useState([]);
+	const navigate = useNavigate();
+
+	async function handleUpdateItem() {
+
+		let updatingImages = location.state.image
+
+		if (productImages.length > 0) {
+			const promises = [];
+
+			//image 4
+			for (let i = 0; i < productImages.length; i++) {
+				console.log(productImages[i]);
+				const promise = mediaUpload(productImages[i]);
+				promises.push(promise);
+				
+			}
+
+			updatingImages = await Promise.all(promises);
+
+		}
+
 		console.log(
 			productKey,
 			productName,
@@ -37,6 +63,7 @@ export default function UpdateItemPage() {
 						category: productCategory,
 						dimensions: productDimensions,
 						description: productDescription,
+						image : updatingImages
 					},
 					{
 						headers: {
@@ -44,9 +71,8 @@ export default function UpdateItemPage() {
 						},
 					}
 				);
-                toast.success(result.data.message);
-                navigate("/admin/items")
-
+				toast.success(result.data.message);
+				navigate("/admin/items");
 			} catch (err) {
 				toast.error(err.response.data.error);
 			}
@@ -60,7 +86,7 @@ export default function UpdateItemPage() {
 			<h1 className="text-lg font-bold mb-4">Update Item</h1>
 			<div className="w-[400px] border p-4 flex flex-col items-center gap-2 rounded-lg shadow-md">
 				<input
-                    disabled
+					disabled
 					type="text"
 					placeholder="Product Key"
 					value={productKey}
@@ -103,13 +129,26 @@ export default function UpdateItemPage() {
 					onChange={(e) => setProductDescription(e.target.value)}
 					className="w-full p-2 border rounded"
 				/>
+				<input
+					type="file"
+					multiple
+					onChange={(e) => {
+						setProductImages(e.target.files);
+					}}
+					className="w-full p-2 border rounded"
+				/>
 				<button
-					onClick={handleAddItem}
+					onClick={handleUpdateItem}
 					className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
 				>
 					Update Item
 				</button>
-				<button onClick={()=>{ navigate("/admin/items")}} className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600">
+				<button
+					onClick={() => {
+						navigate("/admin/items");
+					}}
+					className="w-full p-2 bg-red-500 text-white rounded hover:bg-red-600"
+				>
 					Cancel
 				</button>
 			</div>
