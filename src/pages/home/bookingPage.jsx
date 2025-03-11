@@ -3,7 +3,6 @@ import { formatDate, loadCart } from "../../utils/cart";
 import BookingItem from "../../components/bookingItem";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { use } from "react";
 
 export default function BookingPage(){
     const [cart, setCart] = useState(loadCart());
